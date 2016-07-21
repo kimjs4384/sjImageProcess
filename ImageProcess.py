@@ -7,18 +7,29 @@ import threading
 from geoserver.catalog import Catalog
 import geoserver.util
 import shutil
+import time
 
 class ImageProcess(threading.Thread):
+    # 데이터가 존재하는 폴더
     dataDir = '/Users/jsKim-pc/Desktop/SJ_Univ'
+    # 영역을 GML로 저장하는 폴더
     areaDataDir = '/Users/jsKim-pc/Desktop/SJ_Univ'
     tempFolder = ''
 
-    def __init__(self, data_1, data_2, dataArea):
+    def __init__(self,id, data_1, data_2, dataArea):
         super(ImageProcess, self).__init__()
-        print
+        print time.strftime("%Y%m%d_%H%M%S")
         # TODO: 과거 데이터를 구분
-        self.data_1 = data_1
-        self.data_2 = data_2
+        self.resId = id
+
+        # self.data_1이 상대적 과거 데이터
+        if data_1 > data_2:
+            self.data_1 = data_2
+            self.data_2 = data_1
+        else:
+            self.data_1 = data_1
+            self.data_2 = data_2
+
         self.dataArea = dataArea
 
     def run(self):
@@ -171,7 +182,8 @@ class ImageProcess(threading.Thread):
         shapefileData = geoserver.util.shapefile_and_friends(shpFile)
 
         # TODO: 레이어명 구분이 필요
-        layerName = 'diff_data_6' # next(tempfile._get_candidate_names())
+        layerName = self.resId
+        # layerName = time.strftime("%Y%m%d_%H%M%S")
         ft = cat.create_featurestore(layerName, shapefileData, gsWorkspace)
 
         cat.reload()

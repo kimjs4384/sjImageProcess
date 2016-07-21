@@ -22,11 +22,13 @@ def getRequestData():
     # data_2 = request.args.get('data_2', 'auto')
     # dataArea = request.args.get('dataArea', 'auto')
 
+    # TODO: 데이터를 구분할 key 필요
+    id = request.args.get('id', 'auto')
     data_1 = '2007'
     data_2 = '2014'
     dataArea = 'clip_gml_4326'
 
-    t = ImageProcess(data_1, data_2, dataArea)
+    t = ImageProcess(id, data_1, data_2, dataArea)
     # t = ImageProcess()
     t.start()
 
