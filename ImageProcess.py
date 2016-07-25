@@ -192,10 +192,14 @@ class ImageProcess(threading.Thread):
         cat.reload()
 
         layer = cat.get_layer(layerName)
-        layer._set_default_style('SJ:diff_style')
-        cat.save(layer)
+        diffStyle = cat.get_style('SJ:diff_style')
 
-        shutil.rmtree(self.tempFolder)
+        if diffStyle is not None:
+            layer._set_default_style('SJ:diff_style')
+            cat.save(layer)
+
+        # shutil.rmtree(self.tempFolder)
 
 # if __name__ == '__main__':
 #     ImageProcess()
+
