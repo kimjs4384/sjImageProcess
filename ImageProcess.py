@@ -16,13 +16,13 @@ class ImageProcess(threading.Thread):
     areaDataDir = '/Users/jsKim-pc/Desktop/SJ_Univ'
     tempFolder = ''
 
-    def __init__(self,id, data_1, data_2, dataArea):
+    def __init__(self, id, data_1, data_2, dataArea):
         super(ImageProcess, self).__init__()
         print time.strftime("%Y%m%d_%H%M%S")
         # TODO: 과거 데이터를 구분
         self.resId = id
 
-        # self.data_1이 상대적 과거 데이터
+        # data_1이 상대적 과거 데이터
         if data_1 > data_2:
             self.data_1 = data_2
             self.data_2 = data_1
@@ -53,13 +53,13 @@ class ImageProcess(threading.Thread):
 
     # TODO: 영역 클리핑 / GML 사용 / gdalwarp
     def clipImage(self):
-        areaFile = os.path.join(self.areaDataDir , '{}.gml'.format(self.dataArea))
+        areaFile = os.path.join(self.areaDataDir, '{}.gml'.format(self.dataArea))
 
         inputData_1 = os.path.join(self.dataDir, '{}.tif'.format(self.data_1))
         outputData_1 = os.path.join(self.tempFolder, '{}_clip.tif'.format(self.data_1))
 
         # TODO: -crop_to_cutline 사용시 데이터 손실 발생
-        command_1 = 'gdalwarp -cutline {} -crop_to_cutline -tr 0.000010184343659 -0.000010184343659' \
+        command_1 = 'gdalwarp -cutline {} -tr 0.000010184343659 -0.000010184343659' \
                     ' {} {}'.format(areaFile, inputData_1, outputData_1)
         rc = check_output(command_1.decode(), shell=True)
         print rc
@@ -67,7 +67,7 @@ class ImageProcess(threading.Thread):
         inputData_2 = os.path.join(self.dataDir, '{}.tif'.format(self.data_2))
         outputData_2 = os.path.join(self.tempFolder, '{}_clip.tif'.format(self.data_2))
 
-        command_2 = 'gdalwarp -cutline {} -crop_to_cutline -tr 0.000010184343659 -0.000010184343659' \
+        command_2 = 'gdalwarp -cutline {} -tr 0.000010184343659 -0.000010184343659' \
                     ' {} {}'.format(areaFile, inputData_2, outputData_2)
         rc = check_output(command_2.decode(), shell=True)
         print rc
@@ -98,8 +98,8 @@ class ImageProcess(threading.Thread):
             suffix = '_Fix'
 
         imageData_1 = os.path.join(self.tempFolder, '{}_5187.tif'.format(self.data_2))
-        imageData_2 = os.path.join(self.tempFolder, '{}_5187{}.tif'.format(self.data_1,suffix))
-        outputData = os.path.join(self.tempFolder,'diff.tif')
+        imageData_2 = os.path.join(self.tempFolder, '{}_5187{}.tif'.format(self.data_1, suffix))
+        outputData = os.path.join(self.tempFolder, 'diff.tif')
 
         command = 'gdal_calc.py -A {} -B {} --outfile={} --calc="A-B"'.format(imageData_1, imageData_2, outputData)
         rc = check_output(command.decode(), shell=True)
@@ -107,7 +107,7 @@ class ImageProcess(threading.Thread):
 
     # 이미지 사이즈 체크 및 크기 변환 / gdal_translate
     def checkImageSize(self):
-        imageData_1 = gdal.Open(os.path.join(self.tempFolder,'{}_5187.tif'.format(self.data_1)))
+        imageData_1 = gdal.Open(os.path.join(self.tempFolder, '{}_5187.tif'.format(self.data_1)))
         imageData_2 = gdal.Open(os.path.join(self.tempFolder, '{}_5187.tif'.format(self.data_2)))
 
         result = True
@@ -125,9 +125,9 @@ class ImageProcess(threading.Thread):
 
     # 절/성토지 분류 / gdal_calc
     def classifyDiff(self):
-        inputData = os.path.join(self.tempFolder,'diff.tif')
+        inputData = os.path.join(self.tempFolder, 'diff.tif')
         ignoreRange = '1'
-        outputDate = os.path.join(self.tempFolder,'diff_classify.tif')
+        outputDate = os.path.join(self.tempFolder, 'diff_classify.tif')
 
         command = 'gdal_calc.py -A {0} --outfile={1} --calc="(A<=-{2})*1 + ((A>-{2})&(A<{2}))*2 + (A>={2})*3"'\
             .format(inputData, outputDate, ignoreRange)
@@ -175,7 +175,7 @@ class ImageProcess(threading.Thread):
 
     # GeoServer 등록
     def uploadGS(self):
-        shpFile = os.path.join(self.tempFolder,'diff_simplify')
+        shpFile = os.path.join(self.tempFolder, 'diff_simplify')
 
         cat = Catalog("http://localhost:8080/geoserver/rest", username="admin", password="geoserver")
         gsWorkspace = cat.get_workspace("SJ")
@@ -184,7 +184,7 @@ class ImageProcess(threading.Thread):
         # TODO: 레이어명 구분이 필요
         layerName = self.resId
         # layerName = time.strftime("%Y%m%d_%H%M%S")
-        ft = cat.create_featurestore(layerName, shapefileData, gsWorkspace)
+        cat.create_featurestore(layerName, shapefileData, gsWorkspace)
 
         cat.reload()
 
