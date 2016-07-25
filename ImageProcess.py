@@ -2,6 +2,7 @@
 import os
 import tempfile
 from subprocess import check_output
+from subprocess import call
 from osgeo import gdal
 import threading
 from geoserver.catalog import Catalog
@@ -102,7 +103,8 @@ class ImageProcess(threading.Thread):
         outputData = os.path.join(self.tempFolder, 'diff.tif')
 
         command = 'gdal_calc.py -A {} -B {} --outfile={} --calc="A-B"'.format(imageData_1, imageData_2, outputData)
-        rc = check_output(command.decode(), shell=True)
+        # rc = check_output(command.decode(), shell=True)
+        rc = call(command.decode(), shell=True)
         print rc
 
     # 이미지 사이즈 체크 및 크기 변환 / gdal_translate
@@ -131,7 +133,8 @@ class ImageProcess(threading.Thread):
 
         command = 'gdal_calc.py -A {0} --outfile={1} --calc="(A<=-{2})*1 + ((A>-{2})&(A<{2}))*2 + (A>={2})*3"'\
             .format(inputData, outputDate, ignoreRange)
-        rc = check_output(command.decode(), shell=True)
+        # rc = check_output(command.decode(), shell=True)
+        rc = call(command.decode(), shell=True)
         print rc
 
     # 작은 영역 정리 / gdal_sieve
